@@ -21,7 +21,7 @@ jobs:
           - os: ubuntu-latest
             shell: bash
           - os: windows-latest
-            shell: "wsl-bash {0}"
+            shell: "wsl {0}"
     runs-on: ${{matrix.os}}
     defaults:
       run:
@@ -46,11 +46,13 @@ jobs:
 
       - name: Install WSL
         if: runner.os == 'windows'
-        uses: Vampire/setup-wsl@6f87de3102a29ac6b92800f33bf1e8d9164ac0a1
-        with:
-          distribution: Ubuntu-22.04
-          wsl-shell-user: runner
-          additional-packages: build-essential
+        shell: powershell
+        run: |
+          wsl --install -d Ubuntu-22.04
+          wsl --set-version Ubuntu-22.04 1
+          wsl --set-default-user runner
+          wsl --distribution Ubuntu-22.04 --exec apt-get update
+          wsl --distribution Ubuntu-22.04 --exec apt-get install -y build-essential
 
       - name: Check Bash 3.x syntax
         if: runner.os == 'macOS'
@@ -78,7 +80,7 @@ jobs:
 
       - name: Set up WSL environment
         if: runner.os == 'windows'
-        shell: "wsl-bash -u root {0}"
+        shell: "wsl -u root {0}"
         run: |
           echo "runner ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/runner
           chmod 644 /etc/sudoers.d/runner
